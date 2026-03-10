@@ -1,31 +1,33 @@
+<div align="center">
+
 # Spectral Detection Data Analysis
 
-Python analysis project for controlled and uncontrolled RF spectral detections, prepared for GitHub publishing.
+**Public GitHub-ready repository for controlled and uncontrolled RF spectral detection analysis**
 
-## What is included
+<img src="assets/figures/overview_dashboard.png" alt="Project dashboard" width="900"/>
 
-- `analysis.py` — main analysis script
-- `data/` — the three CSV datasets used by the analysis
-- `report/spectral_detection_data_analysis_report_redacted.pdf` — redacted report version without personal name
-- `requirements.txt` — Python dependencies
-- `.gitignore` — common Python ignores
+</div>
 
-## Project overview
+## Why this repository is useful
 
-This repository analyzes RF spectral-snapshot detections produced by an object detector and a tracker.
+This project packages an end-to-end analysis workflow for RF spectral detections:
+- **Controlled evaluation** for precision and recall inspection
+- **Uncontrolled evaluation** for noise robustness and false positive behavior
+- **Track-level trigger design** using a Neyman–Pearson threshold and reliability gates
+- **Public-safe documentation** with a redacted PDF report
 
-The workflow covers two main tasks:
+## Visual overview
 
-1. **Exploratory data analysis** on a controlled dataset and two uncontrolled datasets.
-2. **Trigger design** using a Neyman–Pearson threshold with track-level reliability gates.
-
-Main analysis topics include:
-
-- score distributions
-- signal power, SINR, bandwidth, and center-frequency summaries
-- precision/recall tables on controlled data
-- false positive rate behavior on uncontrolled data
-- track-based trigger evaluation using `association_id`
+```mermaid
+flowchart LR
+    A[controlled.csv] --> B[EDA + class metrics]
+    C[uncontrolled config 1] --> D[FPR analysis]
+    E[uncontrolled config 2] --> D
+    D --> F[Neyman-Pearson threshold selection]
+    F --> G[Track aggregation by association_id]
+    G --> H[Trigger gates: score, persistence, SINR]
+    H --> I[Final trigger metrics + plots]
+```
 
 ## Repository structure
 
@@ -38,11 +40,58 @@ spectral-detection-analysis/
 │   ├── controlled.csv
 │   ├── uncontrolled_detections_export_config_1.csv
 │   └── uncontrolled_detections_export_config_2.csv
+├── assets/
+│   └── figures/
+│       ├── overview_dashboard.png
+│       ├── controlled_score_histogram.png
+│       ├── noise_fpr_curves.png
+│       ├── category_mix.png
+│       └── trigger_tradeoff.png
 └── report/
     └── spectral_detection_data_analysis_report_redacted.pdf
 ```
 
-## Setup
+## Dataset snapshot
+
+| Dataset | Rows | Notes |
+|---|---:|---|
+| Controlled | 1,161 | Labeled set for precision/recall inspection |
+| Uncontrolled – config 1 | 13,619 | Lower false alarm setting than config 2 |
+| Uncontrolled – config 2 | 29,433 | Harder setting with more noise-driven alerts |
+
+## Key findings
+
+| Finding | Result |
+|---|---|
+| Controlled macro precision at `γ = 0.90` | **97.9%** |
+| Controlled macro recall at `γ = 0.90` | **82.0%** |
+| Neyman–Pearson threshold for config 1 | **γ* = 0.92** |
+| Neyman–Pearson threshold for config 2 | **γ* = 0.99** |
+| Config 1 track FPR improvement | **0.060 → 0.046** |
+| Config 2 track FPR improvement | **0.110 → 0.045** |
+
+## Plot gallery
+
+<p align="center">
+  <img src="assets/figures/controlled_score_histogram.png" alt="Controlled score histogram" width="48%"/>
+  <img src="assets/figures/noise_fpr_curves.png" alt="Noise FPR curves" width="48%"/>
+</p>
+
+<p align="center">
+  <img src="assets/figures/category_mix.png" alt="Category mix" width="48%"/>
+  <img src="assets/figures/trigger_tradeoff.png" alt="Trigger tradeoff" width="48%"/>
+</p>
+
+## Trigger comparison
+
+| Configuration | Baseline FPR | Final FPR | Baseline relative recall | Final relative recall |
+|---|---:|---:|---:|---:|
+| Config 1 | 0.060 | 0.046 | 0.601 | 0.555 |
+| Config 2 | 0.110 | 0.045 | 0.288 | 0.082 |
+
+## Quick start
+
+### 1) Create an environment
 
 ```bash
 python -m venv .venv
@@ -50,32 +99,37 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## Run
-
-Interactive mode:
+### 2) Run the analysis
 
 ```bash
 python analysis.py
 ```
 
-Headless mode without opening plot windows:
-
-```bash
-python analysis.py --no-show
-```
-
-Save plots to a folder:
+### 3) Run headless and save plots
 
 ```bash
 python analysis.py --no-show --save-plots-dir outputs/plots
 ```
 
-## Notes
+## What the code does
 
-- The script expects the CSV files to be inside `data/` by default.
-- `seaborn` is optional and is only used for the score-by-category boxplot.
-- The PDF in `report/` is the redacted version prepared for public sharing.
+- Reads the three CSV datasets from `data/`
+- Generates score, FPR, and parameter-based diagnostic plots
+- Computes controlled precision/recall summaries
+- Estimates noise-only false positive rate curves
+- Builds track-level summaries using `association_id`
+- Applies a trigger with score, persistence, and signal-quality gates
 
-## Suggested GitHub repo name
+## Included report
 
-`spectral-detection-analysis`
+The repository includes a public-shareable report version:
+
+- `report/spectral_detection_data_analysis_report_redacted.pdf`
+
+## Suggested GitHub repo description
+
+> RF spectral detection analysis with controlled/uncontrolled evaluation, Neyman–Pearson trigger design, and visual diagnostics.
+
+## License / usage note
+
+This package was prepared as a **portfolio-style public repository**. Review the data-sharing policy before publishing the raw CSV files publicly.
